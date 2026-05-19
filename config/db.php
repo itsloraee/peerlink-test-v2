@@ -1,17 +1,5 @@
 <?php
-// ── Chargement du .env ────────────────────────────────────
-$envPath = __DIR__ . '/../.env';
-if (file_exists($envPath)) {
-    foreach (file($envPath) as $line) {
-        $line = trim($line);
-        if ($line && !str_starts_with($line, '#') && str_contains($line, '=')) {
-            [$key, $value] = explode('=', $line, 2);
-            putenv(trim($key) . '=' . trim($value));
-        }
-    }
-}
-
-// ── Connexion PDO ─────────────────────────────────────────
+// Lire depuis le .env si dispo (local), sinon depuis les variables d'env Railway
 $host     = getenv('DB_HOST')     ?: 'localhost';
 $port     = getenv('DB_PORT')     ?: '3306';
 $dbname   = getenv('DB_DATABASE') ?: 'peerlink';
@@ -29,5 +17,5 @@ try {
         ]
     );
 } catch (PDOException $e) {
-    die('<p style="color:red;font-family:monospace;padding:1rem">Connexion BDD échouée : ' . $e->getMessage() . '</p>');
+    die('Connexion BDD échouée : ' . $e->getMessage());
 }
