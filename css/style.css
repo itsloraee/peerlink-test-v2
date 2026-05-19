@@ -1,0 +1,106 @@
+/* ── PeerLink — styles custom ─────────────────────────── */
+
+body { background-color: #f8f9fa; }
+
+/* Navbar */
+.navbar-brand .logo-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #4F46E5;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Cards */
+.peer-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .15s;
+}
+.peer-card:hover { border-color: #d1d5db; }
+
+/* Stat card */
+.stat-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px 18px;
+}
+.stat-label { font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+.stat-value { font-size: 24px; font-weight: 600; color: #1a1a1a; }
+.stat-value.points { color: #D97706; }
+
+/* Badges */
+.badge-tech {
+    background: #EEF2FF; color: #4338CA;
+    font-size: 11px; padding: 3px 9px;
+    border-radius: 20px; font-weight: 500;
+}
+.badge-open   { background: #ECFDF5; color: #065F46; font-size:11px; padding:3px 9px; border-radius:20px; font-weight:500; }
+.badge-cours  { background: #EFF6FF; color: #1E40AF; font-size:11px; padding:3px 9px; border-radius:20px; font-weight:500; }
+.badge-done   { background: #f3f4f6; color: #6b7280; font-size:11px; padding:3px 9px; border-radius:20px; font-weight:500; }
+.badge-pts    { background: #FEF3C7; color: #92400E; font-size:12px; padding:4px 10px; border-radius:20px; font-weight:500; }
+.badge-role   { background: #ECFDF5; color: #065F46; font-size:11px; padding:3px 10px; border-radius:20px; font-weight:500; }
+
+/* Avatar */
+.avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #EEF2FF; color: #4338CA;
+    font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.avatar-lg {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: #EEF2FF; color: #4338CA;
+    font-size: 22px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Filtre chips */
+.chip {
+    font-size: 12px; padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    background: #fff; color: #6b7280;
+    cursor: pointer; text-decoration: none;
+    transition: all .1s;
+    display: inline-block;
+}
+.chip:hover, .chip.active {
+    background: #EEF2FF; color: #4338CA;
+    border-color: #C7D2FE;
+}
+
+/* Demande card */
+.demande-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: border-color .15s;
+}
+.demande-card:hover { border-color: #d1d5db; color: inherit; }
+
+/* Table */
+.history-table td, .history-table th {
+    vertical-align: middle;
+    font-size: 13px;
+}
+
+/* Btn primary couleur PeerLink */
+.btn-peer {
+    background: #4F46E5;
+    border-color: #4F46E5;
+    color: #fff;
+}
+.btn-peer:hover { background: #4338CA; border-color: #4338CA; color: #fff; }

@@ -1,0 +1,18 @@
+# Environnement — ne jamais commiter
+.env
+
+# Dépendances
+/vendor/
+/node_modules/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+/logs/
+
+# Cache
+/cache/
+*.cache
