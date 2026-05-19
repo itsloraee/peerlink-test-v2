@@ -1,7 +1,8 @@
-FROM dunglas/frankenphp
+FROM php:8.2-cli
 
-RUN install-php-extensions pdo pdo_mysql
+RUN docker-php-ext-install pdo pdo_mysql
 
-COPY . /app/public
+WORKDIR /app
+COPY . .
 
-CMD ["sh", "-c", "SERVER_NAME=:${PORT:-8080} frankenphp run"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-8080} -t ."]
