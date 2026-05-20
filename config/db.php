@@ -1,9 +1,8 @@
 <?php
-// Lire depuis le .env si dispo (local), sinon depuis les variables d'env Railway
-$host     = getenv('DB_HOST')     ?: 'localhost';
-$port     = getenv('DB_PORT')     ?: '3306';
-$dbname   = getenv('DB_DATABASE') ?: 'peerlink';
-$username = getenv('DB_USERNAME') ?: 'root';
+$host     = getenv('DB_HOST')     ?: 'peerlink-db-peerlink.h.aivencloud.com';
+$port     = getenv('DB_PORT')     ?: '25841';
+$dbname   = getenv('DB_DATABASE') ?: 'defaultdb';
+$username = getenv('DB_USERNAME') ?: 'avnadmin';
 $password = getenv('DB_PASSWORD') ?: '';
 
 try {
@@ -12,8 +11,9 @@ try {
         $username,
         $password,
         [
-            PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_ERRMODE                  => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE       => PDO::FETCH_ASSOC,
+            PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT => false,
         ]
     );
 } catch (PDOException $e) {
