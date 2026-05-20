@@ -28,6 +28,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    // Accepter une réponse → résoudre la demande + attribuer des points
+    if ($action === 'accept_reponse') {
+        $id_user = (int) ($_POST['id_utilisateur'] ?? 0);
+        $points  = 100;
+        if ($id_user) {
+            // Marquer la demande comme terminée
+            $pdo->prepare("UPDATE demande SET statut='terminee' WHERE id_demande=:id")
+                ->execute([':id' => $id]);
+            // Insérer ou mettre à jour la validation
+            $pdo->prepare("
+                INSERT INTO validation (id_utilisateur, id_demande, points_attribues)
+                VALUES (:u, :d, :pts)
+                ON DUPLICATE KEY UPDATE points_attribues = :pts
+            ")->execute([':u' => $id_user, ':d' => $id, ':pts' => $points]);
+            // Ajouter les points à l'utilisateur
+            $pdo->prepare("UPDATE utilisateur SET points = points + :pts WHERE id_utilisateur = :u")
+                ->execute([':pts' => $points, ':u' => $id_user]);
+        }
+        header("Location: demande.php?id=$id");
+        exit;
+    }
+
     // Supprimer une réponse
     if ($action === 'delete_reponse') {
         $id_user = (int) ($_POST['id_utilisateur'] ?? 0);
@@ -167,6 +189,12 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
         /* CONFIRM DELETE */
         .confirm-delete { display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 13px; color: #991b1b; }
         .confirm-delete.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+        /* ACCEPT BUTTON */
+        .btn-accept { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 999px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: #065f46; cursor: pointer; transition: all 0.15s; }
+        .btn-accept:hover { background: #065f46; color: #fff; border-color: #065f46; }
+        .badge-resolved { display: inline-flex; align-items: center; gap: 5px; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 10px 14px; margin-top: 12px; font-size: 13px; color: #065f46; font-weight: 500; width: 100%; }
+        .badge-resolved svg { flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -270,7 +298,14 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
                 </div>
                 <div class="action-btns">
                     <?php if ($r['points_attribues']) : ?>
-                        <span class="tag-validee">Validée</span>
+                        <span class="tag-validee">✓ Acceptée</span>
+                    <?php elseif ($demande['statut'] !== 'terminee') : ?>
+                        <!-- Accepter cette réponse -->
+                        <form method="POST" onsubmit="return confirm('Marquer cette réponse comme solution ? La demande sera résolue et l\'aidant recevra 100 pts.')">
+                            <input type="hidden" name="action" value="accept_reponse" />
+                            <input type="hidden" name="id_utilisateur" value="<?= $r['id_utilisateur'] ?>" />
+                            <button type="submit" class="btn-accept">✓ Accepter</button>
+                        </form>
                     <?php endif; ?>
                     <!-- Supprimer réponse -->
                     <form method="POST" onsubmit="return confirm('Supprimer cette réponse ?')">
@@ -282,6 +317,12 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
             </div>
             <div class="reponse-body"><?= nl2br(htmlspecialchars($r['message'])) ?></div>
             <div class="contact-line">Contact : <?= htmlspecialchars($r['contact']) ?></div>
+            <?php if ($r['points_attribues']) : ?>
+                <div class="badge-resolved">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    Solution acceptée · +<?= $r['points_attribues'] ?> pts attribués
+                </div>
+            <?php endif; ?>
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
