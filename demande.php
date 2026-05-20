@@ -4,48 +4,58 @@ require_once 'config/db.php';
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if (!$id) { header('Location: browse.php'); exit; }
 
-// Traitement d'une nouvelle réponse
+// ── Actions POST ──────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $message = trim($_POST['message'] ?? '');
-    $contact = trim($_POST['contact'] ?? '');
-    $nom     = trim($_POST['nom']     ?? '');
+    $action = $_POST['action'] ?? '';
 
-    if ($message && $contact && $nom) {
-        // Créer un utilisateur anonyme pour l'aidant
-        $stmt = $pdo->prepare("
-            INSERT INTO utilisateur (nom, email, mot_de_passe)
-            VALUES (:nom, :email, :mdp)
-        ");
-        $stmt->execute([
-            ':nom'   => $nom,
-            ':email' => $nom . '_' . uniqid() . '@anonymous.local',
-            ':mdp'   => password_hash(uniqid(), PASSWORD_BCRYPT),
-        ]);
-        $id_user = $pdo->lastInsertId();
+    // Supprimer la demande
+    if ($action === 'delete_demande') {
+        $pdo->prepare("DELETE FROM demande WHERE id_demande = :id")->execute([':id' => $id]);
+        header('Location: browse.php');
+        exit;
+    }
 
-        $stmt = $pdo->prepare("
-            INSERT INTO reponse (id_utilisateur, id_demande, contact, message)
-            VALUES (:id_user, :id_demande, :contact, :message)
-        ");
-        $stmt->execute([
-            ':id_user'   => $id_user,
-            ':id_demande'=> $id,
-            ':contact'   => $contact,
-            ':message'   => $message,
-        ]);
-
-        // Passer la demande en "en_cours" si elle était ouverte
-        $pdo->prepare("
-            UPDATE demande SET statut = 'en_cours'
-            WHERE id_demande = :id AND statut = 'ouverte'
-        ")->execute([':id' => $id]);
-
+    // Modifier la demande
+    if ($action === 'edit_demande') {
+        $titre       = trim($_POST['titre'] ?? '');
+        $description = trim($_POST['description'] ?? '');
+        $id_techno   = (int) ($_POST['id_technologie'] ?? 0);
+        if ($titre && $description && $id_techno) {
+            $pdo->prepare("UPDATE demande SET titre=:t, description=:d, id_technologie=:tech WHERE id_demande=:id")
+                ->execute([':t' => $titre, ':d' => $description, ':tech' => $id_techno, ':id' => $id]);
+        }
         header("Location: demande.php?id=$id");
         exit;
     }
+
+    // Supprimer une réponse
+    if ($action === 'delete_reponse') {
+        $id_user = (int) ($_POST['id_utilisateur'] ?? 0);
+        $pdo->prepare("DELETE FROM reponse WHERE id_utilisateur=:u AND id_demande=:d")
+            ->execute([':u' => $id_user, ':d' => $id]);
+        header("Location: demande.php?id=$id");
+        exit;
+    }
+
+    // Nouvelle réponse
+    if ($action === 'new_reponse') {
+        $message = trim($_POST['message'] ?? '');
+        $contact = trim($_POST['contact'] ?? '');
+        $nom     = trim($_POST['nom']     ?? '');
+        if ($message && $contact && $nom) {
+            $stmt = $pdo->prepare("INSERT INTO utilisateur (nom, email, mot_de_passe) VALUES (:nom, :email, :mdp)");
+            $stmt->execute([':nom' => $nom, ':email' => $nom . '_' . uniqid() . '@anonymous.local', ':mdp' => password_hash(uniqid(), PASSWORD_BCRYPT)]);
+            $id_user = $pdo->lastInsertId();
+            $pdo->prepare("INSERT INTO reponse (id_utilisateur, id_demande, contact, message) VALUES (:u, :d, :c, :m)")
+                ->execute([':u' => $id_user, ':d' => $id, ':c' => $contact, ':m' => $message]);
+            $pdo->prepare("UPDATE demande SET statut='en_cours' WHERE id_demande=:id AND statut='ouverte'")->execute([':id' => $id]);
+            header("Location: demande.php?id=$id");
+            exit;
+        }
+    }
 }
 
-// Récupérer la demande
+// ── Données ───────────────────────────────────────────────
 $stmtD = $pdo->prepare("
     SELECT d.*, u.nom AS nom_demandeur, t.nom_technologie
     FROM demande d
@@ -57,35 +67,21 @@ $stmtD->execute([':id' => $id]);
 $demande = $stmtD->fetch();
 if (!$demande) { header('Location: browse.php'); exit; }
 
-// Récupérer les réponses
 $stmtR = $pdo->prepare("
-    SELECT r.*, u.nom AS nom_aidant,
-           v.points_attribues, v.commentaire
+    SELECT r.*, u.nom AS nom_aidant, v.points_attribues
     FROM reponse r
     JOIN utilisateur u ON r.id_utilisateur = u.id_utilisateur
-    LEFT JOIN validation v ON v.id_utilisateur = r.id_utilisateur
-                           AND v.id_demande = r.id_demande
+    LEFT JOIN validation v ON v.id_utilisateur = r.id_utilisateur AND v.id_demande = r.id_demande
     WHERE r.id_demande = :id
     ORDER BY r.date_reponse ASC
 ");
 $stmtR->execute([':id' => $id]);
 $reponses = $stmtR->fetchAll();
 
-$badgeClass = match($demande['statut']) {
-    'ouverte'  => 'badge-open',
-    'en_cours' => 'badge-cours',
-    default    => 'badge-done'
-};
-$badgeLabel = match($demande['statut']) {
-    'ouverte'  => 'Ouverte',
-    'en_cours' => 'En cours',
-    default    => 'Résolue'
-};
-
-// Initiales demandeur
-$mots      = explode(' ', trim($demande['nom_demandeur']));
-$initiales = strtoupper(implode('', array_map(fn($w) => $w[0], $mots)));
-$initiales = substr($initiales, 0, 2);
+$technos    = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fetchAll();
+$badgeLabel = match($demande['statut']) { 'ouverte' => 'Ouverte', 'en_cours' => 'En cours', default => 'Résolue' };
+$editMode   = isset($_GET['edit']);
+$initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode(' ', trim($demande['nom_demandeur']))))), 0, 2);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -94,107 +90,233 @@ $initiales = substr($initiales, 0, 2);
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PeerLink — <?= htmlspecialchars($demande['titre']) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/style.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #f0ede8; color: #1c1917; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+
+        .nav { background: #fff; border-bottom: 1px solid #e2ddd7; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+        .nav-brand { font-weight: 800; font-size: 16px; color: #1c1917; text-decoration: none; display: flex; align-items: center; gap: 8px; }
+        .nav-brand::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ea580c; display: inline-block; }
+        .btn-ghost { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 6px 16px; font-size: 13px; color: #78716c; text-decoration: none; transition: all 0.15s; }
+        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-orange { background: #ea580c; border: none; border-radius: 999px; padding: 7px 18px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; transition: background 0.15s; cursor: pointer; }
+        .btn-orange:hover { background: #c2410c; color: #fff; }
+
+        .wrapper { max-width: 760px; margin: 32px auto; padding: 0 24px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #78716c; text-decoration: none; margin-bottom: 20px; }
+        .back-link:hover { color: #ea580c; }
+
+        .card { background: #fff; border: 1px solid #e2ddd7; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 14px; }
+
+        /* DEMANDE */
+        .demande-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+        .demande-title { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; margin: 10px 0 12px; line-height: 1.3; }
+        .demande-info { display: flex; gap: 16px; font-size: 12px; color: #a8a29e; margin-bottom: 16px; flex-wrap: wrap; }
+        .demande-body { background: #faf9f7; border: 1px solid #f0ede8; border-radius: 10px; padding: 16px; font-size: 13px; line-height: 1.7; color: #44403c; }
+
+        /* ACTION BUTTONS */
+        .action-btns { display: flex; gap: 8px; align-items: center; }
+        .btn-edit { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 5px 14px; font-size: 12px; color: #78716c; cursor: pointer; text-decoration: none; transition: all 0.15s; }
+        .btn-edit:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-delete { background: none; border: 1px solid #fecaca; border-radius: 999px; padding: 5px 14px; font-size: 12px; color: #dc2626; cursor: pointer; transition: all 0.15s; }
+        .btn-delete:hover { background: #fef2f2; }
+
+        /* EDIT FORM */
+        .edit-form { margin-top: 16px; border-top: 1px solid #f0ede8; padding-top: 16px; }
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 12px; font-weight: 600; color: #78716c; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .field input, .field select, .field textarea {
+            width: 100%; padding: 9px 13px; border: 1px solid #e2ddd7; border-radius: 10px;
+            font-size: 13px; color: #1c1917; background: #fff; font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,0.1); }
+        .field textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
+        .edit-actions { display: flex; gap: 8px; margin-top: 16px; }
+        .btn-save { background: #ea580c; border: none; border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
+        .btn-save:hover { background: #c2410c; }
+        .btn-cancel-edit { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 8px 16px; font-size: 13px; color: #78716c; text-decoration: none; }
+        .btn-cancel-edit:hover { border-color: #78716c; color: #1c1917; }
+
+        /* TAGS */
+        .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+        .tag-tech     { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .tag-ouverte  { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+        .tag-en_cours { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+        .tag-terminee { background: #f5f5f4; color: #57534e; border: 1px solid #d6d3d1; }
+        .tag-validee  { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+
+        .section-title { font-size: 13px; font-weight: 700; color: #78716c; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+
+        /* REPONSES */
+        .reponse-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+        .aidant-info { display: flex; align-items: center; gap: 10px; }
+        .avatar-sm { width: 36px; height: 36px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .aidant-name { font-size: 13px; font-weight: 600; color: #1c1917; }
+        .aidant-date { font-size: 11px; color: #a8a29e; margin-top: 1px; }
+        .reponse-body { font-size: 13px; line-height: 1.7; color: #44403c; margin-bottom: 12px; }
+        .contact-line { font-size: 12px; color: #78716c; padding: 8px 12px; background: #faf9f7; border-radius: 8px; border: 1px solid #f0ede8; }
+        .pts-badge { font-size: 12px; font-weight: 600; color: #ea580c; }
+
+        /* FORM RÉPONSE */
+        .form-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: #1c1917; }
+        .btn-submit { background: #ea580c; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
+        .btn-submit:hover { background: #c2410c; }
+        .empty { text-align: center; padding: 32px; color: #a8a29e; font-size: 13px; }
+
+        /* CONFIRM DELETE */
+        .confirm-delete { display: none; background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 16px; margin-top: 12px; font-size: 13px; color: #991b1b; }
+        .confirm-delete.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    </style>
 </head>
 <body>
 
-<nav class="navbar navbar-light bg-white border-bottom px-4">
-    <a class="navbar-brand fw-semibold" href="browse.php">
-        <span class="logo-dot"></span>PeerLink
-    </a>
-    <a href="create_request.php" class="btn btn-sm btn-peer">+ Poster une demande</a>
+<nav class="nav">
+    <a href="browse.php" class="nav-brand">PeerLink</a>
+    <div style="display:flex;gap:8px">
+        <a href="dashboard.php?id=1" class="btn-ghost">Mon profil</a>
+        <a href="create_request.php" class="btn-orange">Poster une demande</a>
+    </div>
 </nav>
 
-<div class="container py-4" style="max-width:760px">
+<div class="wrapper">
+    <a href="browse.php" class="back-link">← Retour aux demandes</a>
 
-    <a href="browse.php" class="btn btn-sm btn-outline-secondary mb-3">← Retour</a>
+    <!-- DEMANDE -->
+    <div class="card">
+        <div class="demande-meta">
+            <span class="tag tag-tech"><?= htmlspecialchars($demande['nom_technologie']) ?></span>
+            <div class="action-btns">
+                <span class="tag tag-<?= $demande['statut'] ?>"><?= $badgeLabel ?></span>
+                <a href="demande.php?id=<?= $id ?><?= $editMode ? '' : '&edit' ?>" class="btn-edit">
+                    <?= $editMode ? 'Annuler' : 'Modifier' ?>
+                </a>
+                <button class="btn-delete" type="button" onclick="toggleConfirm()">Supprimer</button>
+            </div>
+        </div>
 
-    <!-- Détail de la demande -->
-    <div class="peer-card mb-4">
-        <div class="d-flex justify-content-between align-items-start mb-2">
-            <span class="badge-tech"><?= htmlspecialchars($demande['nom_technologie']) ?></span>
-            <span class="<?= $badgeClass ?>"><?= $badgeLabel ?></span>
-        </div>
-        <h1 class="h5 my-2"><?= htmlspecialchars($demande['titre']) ?></h1>
-        <div class="d-flex gap-3 mb-3" style="font-size:12px;color:#6b7280">
-            <span>👤 <?= htmlspecialchars($demande['nom_demandeur']) ?></span>
-            <span>🕐 <?= date('d/m/Y à H:i', strtotime($demande['date_creation'])) ?></span>
-        </div>
-        <div class="p-3 rounded" style="background:#f8f9fa;font-size:13px;line-height:1.6;color:#374151">
-            <?= nl2br(htmlspecialchars($demande['description'])) ?>
+        <?php if ($editMode) : ?>
+            <!-- FORMULAIRE ÉDITION -->
+            <form method="POST" class="edit-form">
+                <input type="hidden" name="action" value="edit_demande" />
+                <div class="field">
+                    <label>Technologie</label>
+                    <select name="id_technologie">
+                        <?php foreach ($technos as $t) : ?>
+                            <option value="<?= $t['id_technologie'] ?>" <?= $t['id_technologie'] == $demande['id_technologie'] ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($t['nom_technologie']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Titre</label>
+                    <input type="text" name="titre" value="<?= htmlspecialchars($demande['titre']) ?>" required />
+                </div>
+                <div class="field">
+                    <label>Description</label>
+                    <textarea name="description" required><?= htmlspecialchars($demande['description']) ?></textarea>
+                </div>
+                <div class="edit-actions">
+                    <button type="submit" class="btn-save">Enregistrer</button>
+                    <a href="demande.php?id=<?= $id ?>" class="btn-cancel-edit">Annuler</a>
+                </div>
+            </form>
+        <?php else : ?>
+            <div class="demande-title"><?= htmlspecialchars($demande['titre']) ?></div>
+            <div class="demande-info">
+                <span><?= htmlspecialchars($demande['nom_demandeur']) ?></span>
+                <span><?= date('d/m/Y à H:i', strtotime($demande['date_creation'])) ?></span>
+                <span><?= count($reponses) ?> réponse<?= count($reponses) > 1 ? 's' : '' ?></span>
+            </div>
+            <div class="demande-body"><?= nl2br(htmlspecialchars($demande['description'])) ?></div>
+        <?php endif; ?>
+
+        <!-- Confirmation suppression -->
+        <div class="confirm-delete" id="confirmDelete">
+            <span>Supprimer définitivement cette demande et toutes ses réponses ?</span>
+            <form method="POST" style="display:inline">
+                <input type="hidden" name="action" value="delete_demande" />
+                <div style="display:flex;gap:8px">
+                    <button type="submit" class="btn-delete">Confirmer</button>
+                    <button type="button" class="btn-edit" onclick="toggleConfirm()">Annuler</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <!-- Réponses -->
-    <h2 class="h6 mb-3">
-        <?= count($reponses) ?> réponse<?= count($reponses) > 1 ? 's' : '' ?>
-    </h2>
+    <!-- REPONSES -->
+    <div class="section-title"><?= count($reponses) ?> réponse<?= count($reponses) > 1 ? 's' : '' ?></div>
 
     <?php if (empty($reponses)) : ?>
-        <div class="peer-card text-secondary text-center py-4" style="font-size:13px">
-            Aucune réponse pour l'instant — sois le premier à aider !
-        </div>
+        <div class="card empty">Aucune réponse pour l'instant — sois le premier à aider !</div>
     <?php else : ?>
         <?php foreach ($reponses as $r) :
-            $mots2 = explode(' ', trim($r['nom_aidant']));
-            $init2 = strtoupper(implode('', array_map(fn($w) => $w[0], $mots2)));
-            $init2 = substr($init2, 0, 2);
+            $init2 = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode(' ', trim($r['nom_aidant']))))), 0, 2);
         ?>
-        <div class="peer-card mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="avatar"><?= htmlspecialchars($init2) ?></div>
+        <div class="card">
+            <div class="reponse-header">
+                <div class="aidant-info">
+                    <div class="avatar-sm"><?= htmlspecialchars($init2) ?></div>
                     <div>
-                        <div style="font-size:13px;font-weight:500">
-                            <?= htmlspecialchars($r['nom_aidant']) ?>
-                        </div>
-                        <div style="font-size:11px;color:#6b7280">
+                        <div class="aidant-name"><?= htmlspecialchars($r['nom_aidant']) ?></div>
+                        <div class="aidant-date">
                             <?= date('d/m/Y à H:i', strtotime($r['date_reponse'])) ?>
                             <?php if ($r['points_attribues']) : ?>
-                                · <span style="color:#059669">+<?= $r['points_attribues'] ?> pts</span>
+                                · <span class="pts-badge">+<?= $r['points_attribues'] ?> pts</span>
                             <?php endif; ?>
                         </div>
                     </div>
                 </div>
-                <?php if ($r['points_attribues']) : ?>
-                    <span class="badge-pts">✅ Validée</span>
-                <?php endif; ?>
+                <div class="action-btns">
+                    <?php if ($r['points_attribues']) : ?>
+                        <span class="tag-validee">Validée</span>
+                    <?php endif; ?>
+                    <!-- Supprimer réponse -->
+                    <form method="POST" onsubmit="return confirm('Supprimer cette réponse ?')">
+                        <input type="hidden" name="action" value="delete_reponse" />
+                        <input type="hidden" name="id_utilisateur" value="<?= $r['id_utilisateur'] ?>" />
+                        <button type="submit" class="btn-delete">Supprimer</button>
+                    </form>
+                </div>
             </div>
-            <p style="font-size:13px;color:#374151;line-height:1.6;margin-bottom:8px">
-                <?= nl2br(htmlspecialchars($r['message'])) ?>
-            </p>
-            <div style="font-size:12px;color:#6b7280">
-                📬 <?= htmlspecialchars($r['contact']) ?>
-            </div>
+            <div class="reponse-body"><?= nl2br(htmlspecialchars($r['message'])) ?></div>
+            <div class="contact-line">Contact : <?= htmlspecialchars($r['contact']) ?></div>
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
 
-    <!-- Formulaire de réponse -->
+    <!-- FORMULAIRE RÉPONSE -->
     <?php if ($demande['statut'] !== 'terminee') : ?>
-        <div class="peer-card mt-4">
-            <h3 class="h6 mb-3">Apporter ton aide</h3>
-            <form method="POST">
-                <div class="mb-3">
-                    <label class="form-label" style="font-size:13px;font-weight:500">Ton pseudo</label>
-                    <input type="text" name="nom" class="form-control form-control-sm"
-                           placeholder="ton_pseudo" required />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label" style="font-size:13px;font-weight:500">Ta réponse</label>
-                    <textarea name="message" class="form-control form-control-sm" rows="4"
-                              placeholder="Décris ta solution ou ta piste..." required></textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label" style="font-size:13px;font-weight:500">Comment te contacter ?</label>
-                    <input type="text" name="contact" class="form-control form-control-sm"
-                           placeholder="Discord, email, GitHub..." required />
-                </div>
-                <button type="submit" class="btn btn-sm btn-peer">Envoyer ma réponse</button>
-            </form>
-        </div>
+    <div class="card" style="margin-top:8px">
+        <div class="form-title">Apporter ton aide</div>
+        <form method="POST">
+            <input type="hidden" name="action" value="new_reponse" />
+            <div class="field">
+                <label>Ton pseudo</label>
+                <input type="text" name="nom" placeholder="ton_pseudo" required />
+            </div>
+            <div class="field">
+                <label>Ta réponse</label>
+                <textarea name="message" placeholder="Décris ta solution ou ta piste..." required></textarea>
+            </div>
+            <div class="field">
+                <label>Comment te contacter ?</label>
+                <input type="text" name="contact" placeholder="Discord, email, GitHub..." required />
+            </div>
+            <button type="submit" class="btn-submit">Envoyer ma réponse</button>
+        </form>
+    </div>
     <?php endif; ?>
 
 </div>
+
+<script>
+function toggleConfirm() {
+    const el = document.getElementById('confirmDelete');
+    el.classList.toggle('show');
+}
+</script>
+
 </body>
 </html>
