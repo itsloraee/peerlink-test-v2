@@ -1,6 +1,41 @@
 <?php
 require_once 'config/db.php';
 
+function techStyle(string $nom): string {
+    $map = [
+        'php'        => ['#dbeafe','#1d4ed8','#bfdbfe'],
+        'laravel'    => ['#fee2e2','#b91c1c','#fecaca'],
+        'javascript' => ['#fef9c3','#854d0e','#fde68a'],
+        'js'         => ['#fef9c3','#854d0e','#fde68a'],
+        'typescript' => ['#dbeafe','#1e40af','#bfdbfe'],
+        'react'      => ['#cffafe','#0e7490','#a5f3fc'],
+        'vue'        => ['#dcfce7','#15803d','#bbf7d0'],
+        'python'     => ['#e0f2fe','#0369a1','#bae6fd'],
+        'css'        => ['#ede9fe','#6d28d9','#ddd6fe'],
+        'html'       => ['#ffedd5','#c2410c','#fed7aa'],
+        'node'       => ['#dcfce7','#166534','#bbf7d0'],
+        'mysql'      => ['#fff7ed','#c2410c','#fed7aa'],
+        'sql'        => ['#f0fdf4','#166534','#bbf7d0'],
+        'docker'     => ['#dbeafe','#1e40af','#bfdbfe'],
+        'git'        => ['#fee2e2','#991b1b','#fecaca'],
+        'symfony'    => ['#f5f3ff','#5b21b6','#ede9fe'],
+        'angular'    => ['#fee2e2','#9f1239','#fecaca'],
+        'java'       => ['#fff7ed','#9a3412','#fed7aa'],
+        'spring'     => ['#dcfce7','#166534','#bbf7d0'],
+        'go'         => ['#cffafe','#164e63','#a5f3fc'],
+        'rust'       => ['#ffedd5','#7c2d12','#fed7aa'],
+        'c#'         => ['#ede9fe','#5b21b6','#ddd6fe'],
+        'swift'      => ['#fff7ed','#c2410c','#fed7aa'],
+    ];
+    $key = strtolower($nom);
+    foreach ($map as $k => $c) {
+        if (str_contains($key, $k)) return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+    }
+    $palettes = [['#f3e8ff','#7e22ce','#e9d5ff'],['#fce7f3','#9d174d','#fbcfe8'],['#ecfdf5','#065f46','#a7f3d0'],['#eff6ff','#1e40af','#bfdbfe'],['#fef9c3','#854d0e','#fde68a']];
+    $c = $palettes[abs(crc32($nom)) % count($palettes)];
+    return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+}
+
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if (!$id) { header('Location: browse.php'); exit; }
 
@@ -114,19 +149,19 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #f0ede8; color: #1c1917; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+        body { background: #f8f8f8; color: #1c1917; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
 
         .nav { background: #fff; border-bottom: 1px solid #e2ddd7; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
         .nav-brand { font-weight: 800; font-size: 16px; color: #1c1917; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-        .nav-brand::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ea580c; display: inline-block; }
+        .nav-brand::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block; }
         .btn-ghost { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 6px 16px; font-size: 13px; color: #78716c; text-decoration: none; transition: all 0.15s; }
-        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
-        .btn-orange { background: #ea580c; border: none; border-radius: 999px; padding: 7px 18px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; transition: background 0.15s; cursor: pointer; }
-        .btn-orange:hover { background: #c2410c; color: #fff; }
+        .btn-ghost:hover { border-color: #2563eb; color: #2563eb; }
+        .btn-orange { background: #2563eb; border: none; border-radius: 999px; padding: 7px 18px; font-size: 13px; font-weight: 600; color: #fff; text-decoration: none; transition: background 0.15s; cursor: pointer; }
+        .btn-orange:hover { background: #1d4ed8; color: #fff; }
 
         .wrapper { max-width: 760px; margin: 32px auto; padding: 0 24px; }
         .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #78716c; text-decoration: none; margin-bottom: 20px; }
-        .back-link:hover { color: #ea580c; }
+        .back-link:hover { color: #2563eb; }
 
         .card { background: #fff; border: 1px solid #e2ddd7; border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 14px; }
 
@@ -139,7 +174,7 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
         /* ACTION BUTTONS */
         .action-btns { display: flex; gap: 8px; align-items: center; }
         .btn-edit { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 5px 14px; font-size: 12px; color: #78716c; cursor: pointer; text-decoration: none; transition: all 0.15s; }
-        .btn-edit:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-edit:hover { border-color: #2563eb; color: #2563eb; }
         .btn-delete { background: none; border: 1px solid #fecaca; border-radius: 999px; padding: 5px 14px; font-size: 12px; color: #dc2626; cursor: pointer; transition: all 0.15s; }
         .btn-delete:hover { background: #fef2f2; }
 
@@ -152,17 +187,17 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
             font-size: 13px; color: #1c1917; background: #fff; font-family: inherit;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,0.1); }
+        .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .field textarea { resize: vertical; min-height: 100px; line-height: 1.5; }
         .edit-actions { display: flex; gap: 8px; margin-top: 16px; }
-        .btn-save { background: #ea580c; border: none; border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
-        .btn-save:hover { background: #c2410c; }
+        .btn-save { background: #2563eb; border: none; border-radius: 999px; padding: 8px 20px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
+        .btn-save:hover { background: #1d4ed8; }
         .btn-cancel-edit { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 8px 16px; font-size: 13px; color: #78716c; text-decoration: none; }
         .btn-cancel-edit:hover { border-color: #78716c; color: #1c1917; }
 
         /* TAGS */
         .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
-        .tag-tech     { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .tag-tech     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
         .tag-ouverte  { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .tag-en_cours { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .tag-terminee { background: #f5f5f4; color: #57534e; border: 1px solid #d6d3d1; }
@@ -173,17 +208,17 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
         /* REPONSES */
         .reponse-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
         .aidant-info { display: flex; align-items: center; gap: 10px; }
-        .avatar-sm { width: 36px; height: 36px; border-radius: 8px; background: #fff7ed; border: 1px solid #fed7aa; color: #ea580c; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar-sm { width: 36px; height: 36px; border-radius: 8px; background: #eff6ff; border: 1px solid #bfdbfe; color: #2563eb; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .aidant-name { font-size: 13px; font-weight: 600; color: #1c1917; }
         .aidant-date { font-size: 11px; color: #a8a29e; margin-top: 1px; }
         .reponse-body { font-size: 13px; line-height: 1.7; color: #44403c; margin-bottom: 12px; }
         .contact-line { font-size: 12px; color: #78716c; padding: 8px 12px; background: #faf9f7; border-radius: 8px; border: 1px solid #f0ede8; }
-        .pts-badge { font-size: 12px; font-weight: 600; color: #ea580c; }
+        .pts-badge { font-size: 12px; font-weight: 600; color: #2563eb; }
 
         /* FORM RÉPONSE */
         .form-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: #1c1917; }
-        .btn-submit { background: #ea580c; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
-        .btn-submit:hover { background: #c2410c; }
+        .btn-submit { background: #2563eb; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; }
+        .btn-submit:hover { background: #1d4ed8; }
         .empty { text-align: center; padding: 32px; color: #a8a29e; font-size: 13px; }
 
         /* CONFIRM DELETE */
@@ -213,7 +248,7 @@ $initiales  = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode('
     <!-- DEMANDE -->
     <div class="card">
         <div class="demande-meta">
-            <span class="tag tag-tech"><?= htmlspecialchars($demande['nom_technologie']) ?></span>
+            <span class="tag" style="<?= techStyle($demande['nom_technologie']) ?>"><?= htmlspecialchars($demande['nom_technologie']) ?></span>
             <div class="action-btns">
                 <span class="tag tag-<?= $demande['statut'] ?>"><?= $badgeLabel ?></span>
                 <a href="demande.php?id=<?= $id ?><?= $editMode ? '' : '&edit' ?>" class="btn-edit">

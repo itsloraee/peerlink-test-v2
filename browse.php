@@ -1,6 +1,52 @@
 <?php
 require_once 'config/db.php';
 
+// ── Couleurs par technologie ───────────────────────────────
+function techStyle(string $nom): string {
+    $map = [
+        'php'        => ['#dbeafe','#1d4ed8','#bfdbfe'],
+        'laravel'    => ['#fee2e2','#b91c1c','#fecaca'],
+        'javascript' => ['#fef9c3','#854d0e','#fde68a'],
+        'js'         => ['#fef9c3','#854d0e','#fde68a'],
+        'typescript' => ['#dbeafe','#1e40af','#bfdbfe'],
+        'react'      => ['#cffafe','#0e7490','#a5f3fc'],
+        'vue'        => ['#dcfce7','#15803d','#bbf7d0'],
+        'python'     => ['#e0f2fe','#0369a1','#bae6fd'],
+        'css'        => ['#ede9fe','#6d28d9','#ddd6fe'],
+        'html'       => ['#ffedd5','#c2410c','#fed7aa'],
+        'node'       => ['#dcfce7','#166534','#bbf7d0'],
+        'mysql'      => ['#fff7ed','#c2410c','#fed7aa'],
+        'sql'        => ['#f0fdf4','#166534','#bbf7d0'],
+        'docker'     => ['#dbeafe','#1e40af','#bfdbfe'],
+        'git'        => ['#fee2e2','#991b1b','#fecaca'],
+        'symfony'    => ['#f5f3ff','#5b21b6','#ede9fe'],
+        'angular'    => ['#fee2e2','#9f1239','#fecaca'],
+        'java'       => ['#fff7ed','#9a3412','#fed7aa'],
+        'spring'     => ['#dcfce7','#166534','#bbf7d0'],
+        'go'         => ['#cffafe','#164e63','#a5f3fc'],
+        'rust'       => ['#ffedd5','#7c2d12','#fed7aa'],
+        'c#'         => ['#ede9fe','#5b21b6','#ddd6fe'],
+        'dotnet'     => ['#ede9fe','#5b21b6','#ddd6fe'],
+        'swift'      => ['#fff7ed','#c2410c','#fed7aa'],
+    ];
+    $key = strtolower($nom);
+    foreach ($map as $k => $c) {
+        if (str_contains($key, $k)) {
+            return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+        }
+    }
+    // Fallback palette
+    $palettes = [
+        ['#f3e8ff','#7e22ce','#e9d5ff'],
+        ['#fce7f3','#9d174d','#fbcfe8'],
+        ['#ecfdf5','#065f46','#a7f3d0'],
+        ['#eff6ff','#1e40af','#bfdbfe'],
+        ['#fef9c3','#854d0e','#fde68a'],
+    ];
+    $c = $palettes[abs(crc32($nom)) % count($palettes)];
+    return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+}
+
 $filtre = isset($_GET['techno']) ? (int) $_GET['techno'] : 0;
 
 $stats = $pdo->query("
@@ -39,7 +85,7 @@ $demandes = $stmt->fetchAll();
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #f0ede8;
+            background: #f8f8f8;
             color: #1c1917;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 14px;
@@ -71,7 +117,7 @@ $demandes = $stmt->fetchAll();
             content: '';
             width: 8px; height: 8px;
             border-radius: 50%;
-            background: #ea580c;
+            background: #2563eb;
             display: inline-block;
         }
         .nav-actions { display: flex; gap: 8px; align-items: center; }
@@ -86,9 +132,9 @@ $demandes = $stmt->fetchAll();
             text-decoration: none;
             transition: all 0.15s;
         }
-        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-ghost:hover { border-color: #2563eb; color: #2563eb; }
         .btn-orange {
-            background: #ea580c;
+            background: #2563eb;
             border: none;
             border-radius: 999px;
             padding: 7px 18px;
@@ -99,7 +145,7 @@ $demandes = $stmt->fetchAll();
             text-decoration: none;
             transition: background 0.15s;
         }
-        .btn-orange:hover { background: #c2410c; color: #fff; }
+        .btn-orange:hover { background: #1d4ed8; color: #fff; }
 
         /* MAIN WRAPPER */
         .wrapper {
@@ -168,8 +214,8 @@ $demandes = $stmt->fetchAll();
             transition: all 0.15s;
             cursor: pointer;
         }
-        .chip:hover { border-color: #ea580c; color: #ea580c; }
-        .chip.active { background: #ea580c; border-color: #ea580c; color: #fff; font-weight: 600; }
+        .chip:hover { border-color: #2563eb; color: #2563eb; }
+        .chip.active { background: #2563eb; border-color: #2563eb; color: #fff; font-weight: 600; }
 
         /* DEMANDE CARDS */
         a.demande-card {
@@ -187,7 +233,7 @@ $demandes = $stmt->fetchAll();
         a.demande-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-            border-color: #fed7aa;
+            border-color: #bfdbfe;
         }
         .card-top {
             display: flex;
@@ -226,7 +272,7 @@ $demandes = $stmt->fetchAll();
             border-radius: 999px;
             white-space: nowrap;
         }
-        .tag-tech     { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .tag-tech     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
         .tag-ouverte  { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .tag-en_cours { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .tag-terminee { background: #f5f5f4; color: #57534e; border: 1px solid #d6d3d1; }
@@ -241,7 +287,7 @@ $demandes = $stmt->fetchAll();
             color: #a8a29e;
             font-size: 14px;
         }
-        .empty-state a { color: #ea580c; text-decoration: none; }
+        .empty-state a { color: #2563eb; text-decoration: none; }
         .empty-state a:hover { text-decoration: underline; }
     </style>
 </head>
@@ -260,15 +306,15 @@ $demandes = $stmt->fetchAll();
 
     <!-- Stats -->
     <div class="stats-row">
-        <div class="stat-card">
+        <div class="stat-card green">
             <div class="lbl">Demandes ouvertes</div>
             <div class="num"><?= $stats['ouvertes'] ?></div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card blue">
             <div class="lbl">Résolues</div>
             <div class="num"><?= $stats['terminees'] ?></div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card orange">
             <div class="lbl">Total demandes</div>
             <div class="num"><?= $stats['total'] ?></div>
         </div>
@@ -307,7 +353,7 @@ $demandes = $stmt->fetchAll();
             </div>
             <div class="card-desc"><?= htmlspecialchars(mb_substr($d['description'], 0, 120)) ?>…</div>
             <div class="card-meta">
-                <span class="tag tag-tech"><?= htmlspecialchars($d['nom_technologie']) ?></span>
+                <span class="tag" style="<?= techStyle($d['nom_technologie']) ?>"><?= htmlspecialchars($d['nom_technologie']) ?></span>
                 <span><?= htmlspecialchars($d['nom_demandeur']) ?></span>
                 <span><?= date('d/m/Y', strtotime($d['date_creation'])) ?></span>
                 <span><?= $d['nb_reponses'] ?> réponse<?= $d['nb_reponses'] > 1 ? 's' : '' ?></span>

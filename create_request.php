@@ -53,7 +53,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #f0ede8;
+            background: #f8f8f8;
             color: #1c1917;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 14px;
@@ -85,7 +85,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
             content: '';
             width: 8px; height: 8px;
             border-radius: 50%;
-            background: #ea580c;
+            background: #2563eb;
             display: inline-block;
         }
         .btn-ghost {
@@ -98,7 +98,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
             text-decoration: none;
             transition: all 0.15s;
         }
-        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-ghost:hover { border-color: #2563eb; color: #2563eb; }
 
         /* WRAPPER */
         .wrapper {
@@ -116,7 +116,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
             text-decoration: none;
             margin-bottom: 20px;
         }
-        .back-link:hover { color: #ea580c; }
+        .back-link:hover { color: #2563eb; }
 
         h1 {
             font-size: 20px;
@@ -177,8 +177,8 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
         .field select:focus,
         .field textarea:focus {
             outline: none;
-            border-color: #ea580c;
-            box-shadow: 0 0 0 3px rgba(234,88,12,0.1);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
         }
         .field textarea { resize: vertical; min-height: 120px; line-height: 1.5; }
 
@@ -206,7 +206,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
         /* ACTIONS */
         .actions { display: flex; gap: 10px; margin-top: 24px; }
         .btn-submit {
-            background: #ea580c;
+            background: #2563eb;
             border: none;
             border-radius: 999px;
             padding: 10px 24px;
@@ -216,7 +216,7 @@ $technos = $pdo->query("SELECT * FROM technologie ORDER BY nom_technologie")->fe
             cursor: pointer;
             transition: background 0.15s;
         }
-        .btn-submit:hover { background: #c2410c; }
+        .btn-submit:hover { background: #1d4ed8; }
         .btn-cancel {
             background: none;
             border: 1px solid #e2ddd7;

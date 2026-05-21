@@ -57,24 +57,24 @@ $initiales = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode(' 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #f0ede8; color: #1c1917; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
+        body { background: #f8f8f8; color: #1c1917; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; }
 
         /* NAVBAR */
         .nav { background: #fff; border-bottom: 1px solid #e2ddd7; height: 56px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
         .nav-brand { font-weight: 800; font-size: 16px; color: #1c1917; text-decoration: none; display: flex; align-items: center; gap: 8px; }
-        .nav-brand::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #ea580c; display: inline-block; }
+        .nav-brand::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #2563eb; display: inline-block; }
         .btn-ghost { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 6px 16px; font-size: 13px; color: #78716c; text-decoration: none; transition: all 0.15s; }
-        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-ghost:hover { border-color: #2563eb; color: #2563eb; }
 
         /* WRAPPER */
         .wrapper { max-width: 520px; margin: 36px auto; padding: 0 24px; }
 
         .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #78716c; text-decoration: none; margin-bottom: 20px; }
-        .back-link:hover { color: #ea580c; }
+        .back-link:hover { color: #2563eb; }
 
         /* AVATAR BLOCK */
         .avatar-block { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
-        .avatar { width: 56px; height: 56px; border-radius: 12px; background: #fff7ed; border: 2px solid #fed7aa; color: #ea580c; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .avatar { width: 56px; height: 56px; border-radius: 12px; background: #eff6ff; border: 2px solid #bfdbfe; color: #2563eb; font-size: 18px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .avatar-info .name { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
         .avatar-info .sub { font-size: 12px; color: #a8a29e; margin-top: 3px; }
 
@@ -96,7 +96,7 @@ $initiales = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode(' 
             font-size: 13px; color: #1c1917; background: #fff; font-family: inherit;
             transition: border-color 0.15s, box-shadow 0.15s;
         }
-        .field input:focus { outline: none; border-color: #ea580c; box-shadow: 0 0 0 3px rgba(234,88,12,0.1); }
+        .field input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
         /* INPUT + BUTTON ROW */
         .input-row { display: flex; gap: 8px; align-items: center; }
@@ -114,14 +114,14 @@ $initiales = substr(strtoupper(implode('', array_map(fn($w) => $w[0], explode(' 
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-random:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-random:hover { border-color: #2563eb; color: #2563eb; }
 
         hr.sep { border: none; border-top: 1px solid #f0ede8; margin: 22px 0; }
 
         /* ACTIONS */
         .actions { display: flex; gap: 10px; margin-top: 24px; }
-        .btn-save { background: #ea580c; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; transition: background 0.15s; }
-        .btn-save:hover { background: #c2410c; }
+        .btn-save { background: #2563eb; border: none; border-radius: 999px; padding: 10px 24px; font-size: 13px; font-weight: 600; color: #fff; cursor: pointer; transition: background 0.15s; }
+        .btn-save:hover { background: #1d4ed8; }
         .btn-cancel { background: none; border: 1px solid #e2ddd7; border-radius: 999px; padding: 10px 20px; font-size: 13px; color: #78716c; text-decoration: none; transition: all 0.15s; }
         .btn-cancel:hover { border-color: #78716c; color: #1c1917; }
     </style>

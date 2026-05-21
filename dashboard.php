@@ -1,6 +1,41 @@
 <?php
 require_once 'config/db.php';
 
+function techStyle(string $nom): string {
+    $map = [
+        'php'        => ['#dbeafe','#1d4ed8','#bfdbfe'],
+        'laravel'    => ['#fee2e2','#b91c1c','#fecaca'],
+        'javascript' => ['#fef9c3','#854d0e','#fde68a'],
+        'js'         => ['#fef9c3','#854d0e','#fde68a'],
+        'typescript' => ['#dbeafe','#1e40af','#bfdbfe'],
+        'react'      => ['#cffafe','#0e7490','#a5f3fc'],
+        'vue'        => ['#dcfce7','#15803d','#bbf7d0'],
+        'python'     => ['#e0f2fe','#0369a1','#bae6fd'],
+        'css'        => ['#ede9fe','#6d28d9','#ddd6fe'],
+        'html'       => ['#ffedd5','#c2410c','#fed7aa'],
+        'node'       => ['#dcfce7','#166534','#bbf7d0'],
+        'mysql'      => ['#fff7ed','#c2410c','#fed7aa'],
+        'sql'        => ['#f0fdf4','#166534','#bbf7d0'],
+        'docker'     => ['#dbeafe','#1e40af','#bfdbfe'],
+        'git'        => ['#fee2e2','#991b1b','#fecaca'],
+        'symfony'    => ['#f5f3ff','#5b21b6','#ede9fe'],
+        'angular'    => ['#fee2e2','#9f1239','#fecaca'],
+        'java'       => ['#fff7ed','#9a3412','#fed7aa'],
+        'spring'     => ['#dcfce7','#166534','#bbf7d0'],
+        'go'         => ['#cffafe','#164e63','#a5f3fc'],
+        'rust'       => ['#ffedd5','#7c2d12','#fed7aa'],
+        'c#'         => ['#ede9fe','#5b21b6','#ddd6fe'],
+        'swift'      => ['#fff7ed','#c2410c','#fed7aa'],
+    ];
+    $key = strtolower($nom);
+    foreach ($map as $k => $c) {
+        if (str_contains($key, $k)) return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+    }
+    $palettes = [['#f3e8ff','#7e22ce','#e9d5ff'],['#fce7f3','#9d174d','#fbcfe8'],['#ecfdf5','#065f46','#a7f3d0'],['#eff6ff','#1e40af','#bfdbfe'],['#fef9c3','#854d0e','#fde68a']];
+    $c = $palettes[abs(crc32($nom)) % count($palettes)];
+    return "background:{$c[0]};color:{$c[1]};border:1px solid {$c[2]}";
+}
+
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 1;
 
 $stmtUser = $pdo->prepare("SELECT * FROM utilisateur WHERE id_utilisateur = :id");
@@ -63,7 +98,7 @@ $initiales  = substr($initiales, 0, 2);
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            background: #f0ede8;
+            background: #f8f8f8;
             color: #1c1917;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             font-size: 14px;
@@ -95,7 +130,7 @@ $initiales  = substr($initiales, 0, 2);
             content: '';
             width: 8px; height: 8px;
             border-radius: 50%;
-            background: #ea580c;
+            background: #2563eb;
             display: inline-block;
         }
         .nav-actions { display: flex; gap: 8px; align-items: center; }
@@ -109,9 +144,9 @@ $initiales  = substr($initiales, 0, 2);
             cursor: pointer;
             text-decoration: none;
         }
-        .btn-ghost:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-ghost:hover { border-color: #2563eb; color: #2563eb; }
         .btn-orange {
-            background: #ea580c;
+            background: #2563eb;
             border: none;
             border-radius: 999px;
             padding: 7px 18px;
@@ -121,7 +156,7 @@ $initiales  = substr($initiales, 0, 2);
             cursor: pointer;
             text-decoration: none;
         }
-        .btn-orange:hover { background: #c2410c; color: #fff; }
+        .btn-orange:hover { background: #1d4ed8; color: #fff; }
 
         /* PROFILE HEADER */
         .profile-bar {
@@ -150,13 +185,13 @@ $initiales  = substr($initiales, 0, 2);
             transition: all 0.15s;
             white-space: nowrap;
         }
-        .btn-edit-profile:hover { border-color: #ea580c; color: #ea580c; }
+        .btn-edit-profile:hover { border-color: #2563eb; color: #2563eb; }
         .avatar {
             width: 56px; height: 56px;
             border-radius: 12px;
-            background: #fff7ed;
-            border: 2px solid #fed7aa;
-            color: #ea580c;
+            background: #eff6ff;
+            border: 2px solid #bfdbfe;
+            color: #2563eb;
             font-size: 18px;
             font-weight: 800;
             display: flex;
@@ -167,9 +202,9 @@ $initiales  = substr($initiales, 0, 2);
         .profile-name { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
         .profile-meta { font-size: 13px; color: #78716c; margin-top: 4px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .tag-role {
-            background: #fff7ed;
-            color: #ea580c;
-            border: 1px solid #fed7aa;
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
             border-radius: 999px;
             font-size: 11px;
             font-weight: 600;
@@ -200,10 +235,6 @@ $initiales  = substr($initiales, 0, 2);
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-        .stat-card.orange {
-            background: #ea580c;
-            border-color: #ea580c;
-        }
         .stat-card .num {
             font-size: 38px;
             font-weight: 800;
@@ -211,7 +242,6 @@ $initiales  = substr($initiales, 0, 2);
             color: #1c1917;
             line-height: 1;
         }
-        .stat-card.orange .num { color: #fff; }
         .stat-card .lbl {
             font-size: 11px;
             font-weight: 600;
@@ -220,7 +250,6 @@ $initiales  = substr($initiales, 0, 2);
             color: #78716c;
             margin-top: 6px;
         }
-        .stat-card.orange .lbl { color: rgba(255,255,255,0.8); }
 
         /* SECTION CARD */
         .section {
@@ -244,7 +273,7 @@ $initiales  = substr($initiales, 0, 2);
             letter-spacing: 0.6px;
             color: #78716c;
         }
-        .section-head a { font-size: 12px; color: #ea580c; text-decoration: none; }
+        .section-head a { font-size: 12px; color: #2563eb; text-decoration: none; }
         .section-head a:hover { text-decoration: underline; }
 
         /* TABLE */
@@ -270,7 +299,7 @@ $initiales  = substr($initiales, 0, 2);
         tr:last-child td { border-bottom: none; }
         tbody tr:hover td { background: #fdf8f5; }
         td a { color: #1c1917; font-weight: 500; text-decoration: none; }
-        td a:hover { color: #ea580c; }
+        td a:hover { color: #2563eb; }
 
         /* TAGS */
         .tag {
@@ -281,11 +310,11 @@ $initiales  = substr($initiales, 0, 2);
             border-radius: 999px;
             white-space: nowrap;
         }
-        .tag-tech     { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .tag-tech     { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; } /* fallback, overridden by inline */
         .tag-ouverte  { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .tag-en_cours { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
         .tag-terminee { background: #f5f5f4; color: #57534e; border: 1px solid #d6d3d1; }
-        .pts          { font-weight: 700; color: #ea580c; }
+        .pts          { font-weight: 700; color: #2563eb; }
 
         /* LEADERBOARD */
         .lead-card {
@@ -313,7 +342,7 @@ $initiales  = substr($initiales, 0, 2);
             border-bottom: 1px solid #f5f2ef;
         }
         .lead-row:last-child { border-bottom: none; }
-        .lead-row.me { background: #fff7ed; }
+        .lead-row.me { background: #eff6ff; }
         .rank {
             width: 24px; height: 24px;
             border-radius: 6px;
@@ -329,14 +358,14 @@ $initiales  = substr($initiales, 0, 2);
         }
         .rank.r1 { background: #fef3c7; color: #92400e; border-color: #fde68a; }
         .rank.r2 { background: #f3f4f6; color: #374151; border-color: #d1d5db; }
-        .rank.r3 { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+        .rank.r3 { background: #eff6ff; color: #9a3412; border-color: #bfdbfe; }
         .lead-name { font-size: 13px; font-weight: 500; color: #1c1917; flex: 1; }
-        .you { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; margin-left: 4px; }
-        .lead-pts { font-size: 13px; font-weight: 700; color: #ea580c; }
+        .you { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 999px; background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; margin-left: 4px; }
+        .lead-pts { font-size: 13px; font-weight: 700; color: #2563eb; }
 
         /* EMPTY */
         .empty { text-align: center; padding: 32px; color: #a8a29e; font-size: 13px; }
-        .empty a { color: #ea580c; }
+        .empty a { color: #2563eb; }
     </style>
 </head>
 <body>
@@ -373,11 +402,11 @@ $initiales  = substr($initiales, 0, 2);
 
         <!-- Stats -->
         <div class="stats-row">
-            <div class="stat-card">
+            <div class="stat-card blue">
                 <div class="num counter" data-target="<?= $nbDemandes ?>">0</div>
                 <div class="lbl">Demandes postées</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card green">
                 <div class="num counter" data-target="<?= $nbAides ?>">0</div>
                 <div class="lbl">Aides données</div>
             </div>
@@ -401,7 +430,7 @@ $initiales  = substr($initiales, 0, 2);
                 <?php else : foreach ($mesDemandes as $d) : ?>
                     <tr>
                         <td><a href="demande.php?id=<?= $d['id_demande'] ?>"><?= htmlspecialchars($d['titre']) ?></a></td>
-                        <td><span class="tag tag-tech"><?= htmlspecialchars($d['nom_technologie']) ?></span></td>
+                        <td><span class="tag" style="<?= techStyle($d['nom_technologie']) ?>"><?= htmlspecialchars($d['nom_technologie']) ?></span></td>
                         <td style="color:#78716c"><?= $d['nb_reponses'] ?></td>
                         <td><span class="tag tag-<?= $d['statut'] ?>"><?= match($d['statut']) { 'ouverte' => 'Ouverte', 'en_cours' => 'En cours', 'terminee' => 'Terminée', default => $d['statut'] } ?></span></td>
                     </tr>
@@ -424,7 +453,7 @@ $initiales  = substr($initiales, 0, 2);
                 <?php else : foreach ($mesAides as $a) : ?>
                     <tr>
                         <td><a href="demande.php?id=<?= $a['id_demande'] ?>"><?= htmlspecialchars($a['titre']) ?></a></td>
-                        <td><span class="tag tag-tech"><?= htmlspecialchars($a['nom_technologie']) ?></span></td>
+                        <td><span class="tag" style="<?= techStyle($a['nom_technologie']) ?>"><?= htmlspecialchars($a['nom_technologie']) ?></span></td>
                         <td style="color:#a8a29e;font-size:12px"><?= date('d/m/Y', strtotime($a['date_reponse'])) ?></td>
                         <td><?php if ($a['points_attribues']) : ?><span class="pts">+<?= $a['points_attribues'] ?> pts</span><?php else : ?><span style="color:#a8a29e">—</span><?php endif; ?></td>
                     </tr>
